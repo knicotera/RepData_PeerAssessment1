@@ -11,15 +11,14 @@ output:
 ```{r}
 setwd('/Users/knicoter/RepData_PeerAssessment1')
 library(data.table)
-active<-data.table(read.csv("./activity.csv"))
-summary(active)
+dt<-data.table(read.csv("./activity.csv"))
 ```
 
 ## What is mean total number of steps taken per day?
 
 ```{r, echo=TRUE}
 #histogram of the total number of steps taken each day
-step_sum<-active[,sum(steps,na.rm=TRUE),by=date]
+step_sum<-dt[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum, 'V1', 'date_sum')
 hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Steps", ylab="Count")
 ```
@@ -50,7 +49,7 @@ median(step_sum$date_sum, na.rm=TRUE)
 
 ```{r, echo=TRUE}
 #time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-avg_int<-active[,mean(steps,na.rm=TRUE),by=interval]
+avg_int<-dt[,mean(steps,na.rm=TRUE),by=interval]
 setnames(avg_int, "V1", "interval_mean")
 plot(avg_int, type='l', main="Average Daily Activity Pattern", xlab="Interval", ylab="Steps")
 ```
@@ -68,7 +67,7 @@ avg_int[which.max(avg_int$interval_mean)]
 
 ```{r, echo=TRUE}
 #total number of missing values in the dataset
-nrow(active[is.na(active$steps),])
+nrow(dt[is.na(dt$steps),])
 ```
 
 ```{r, echo=TRUE}
@@ -78,12 +77,12 @@ nrow(active[is.na(active$steps),])
 ```{r, echo=TRUE}
 dt<-subset(merge(na_step, interval_average, by="interval"), TRUE,select=c(interval_mean, date, interval))
 setnames(dt, "interval_mean", "steps")
-active_clean<-rbind(subset(active, !is.na(steps)), dt)
-summary(active_clean)
+dt_clean<-rbind(subset(dt, !is.na(steps)), dt)
+summary(dt_clean)
 ```
 
 ```{r, echo=TRUE}
-step_sum_clean<-active_clean[,sum(steps,na.rm=TRUE),by=date]
+step_sum_clean<-dt_clean[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum_clean, "V1", "date_sum")
 
 hist(step_sum_clean$date_sum, main="Total Steps Per Day", xlab="Total Steps")
@@ -112,12 +111,12 @@ median(step_sum_clean$date_sum, na.rm=TRUE)
 ```{r, echo=TRUE}
 #Factor variable with two levels indicating a weekday or weekend
 Sys.setlocale("LC_TIME", "en_US.UTF-8")
-active_clean[,w:=factor(ifelse(weekdays(as.Date(date),abbreviate=TRUE) %in% c("Sat","Sun"), "weekend","weekday"))]
+dt_clean[,w:=factor(ifelse(weekdays(as.Date(date),abbreviate=TRUE) %in% c("Sat","Sun"), "weekend","weekday"))]
 ```
 
 ```{r, echo=TRUE}
 library(reshape2)
-stepsmelt<-melt(active_clean,id.vars=c("w","interval"), measure="steps")
+stepsmelt<-melt(dt_clean,id.vars=c("w","interval"), measure="steps")
 steps_mean<-dcast(stepsmelt, w+interval~variable, fun=mean)
 
 library(lattice)

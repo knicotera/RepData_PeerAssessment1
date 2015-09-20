@@ -29,16 +29,8 @@ mean(step_sum$date_sum, na.rm=TRUE)
 ```
 
 ```{r, echo=TRUE}
-## [1] 9354
-```
-
-```{r, echo=TRUE}
 #median number of steps per day
 median(step_sum$date_sum, na.rm=TRUE)
-```
-
-```{r, echo=TRUE}
-## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -53,30 +45,23 @@ plot(avg_int, type='l', main="Average Daily Activity Pattern", xlab="Interval", 
 
 ```{r, echo=TRUE}
 #Which 5-min time interval contains the maximum number of steps?
-avg_int[which.max(avg_int$interval_mean)]
-```
-
-```{r, echo=TRUE}
-## [1] 835
+max_int<-avg_int[which.max(avg_int$interval_mean)]
+max_int$interval
 ```
 
 ## Imputing missing values
 
 ```{r, echo=TRUE}
 #total number of missing values in the dataset
-nrow(dt[is.na(dt$steps),])
-```
-
-```{r, echo=TRUE}
-## [1] 2304
+na_step<-subset(dt, is.na(steps))
+sum(is.na(na_step))
 ```
 
 ```{r, echo=TRUE}
 #fill in all of the missing values in the dataset
-dt<-subset(merge(na_step, interval_average, by="interval"), TRUE,select=c(interval_mean, date, interval))
-setnames(dt, "interval_mean", "steps")
-dt_clean<-rbind(subset(dt, !is.na(steps)), dt)
-summary(dt_clean)
+dt2<-subset(merge(na_step, avg_int, by="interval"), TRUE,select=c(interval_mean, date, interval))
+setnames(dt2, "interval_mean", "steps")
+dt_clean<-rbind(subset(dt, !is.na(steps)), dt2)
 ```
 
 ```{r, echo=TRUE}
@@ -97,16 +82,8 @@ mean(step_sum_clean$date_sum, na.rm=TRUE)
 ```
 
 ```{r, echo=TRUE}
-## [1] 10766
-```
-
-```{r, echo=TRUE}
 #median number of steps per day
 median(step_sum_clean$date_sum, na.rm=TRUE)
-```
-
-```{r, echo=TRUE}
-## [1] 10766
 ```
 
 **Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?**
@@ -115,7 +92,7 @@ Yes. A larger mean change is the result of imputing missing data on the estimate
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, results="hide"}
 #factor variable with two levels indicating a weekday or weekend
 Sys.setlocale("LC_TIME", "en_US.UTF-8")
 dt_clean[,w:=factor(ifelse(weekdays(as.Date(date),abbreviate=TRUE) %in% c("Sat","Sun"), "weekend","weekday"))]

@@ -17,25 +17,109 @@ summary(active)
 
 ## What is mean total number of steps taken per day?
 
-### Calculate the summary total number of steps every day
-
 ```{r, echo=TRUE}
+#histogram of the total number of steps taken each day
 step_sum<-active[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum, 'V1', 'date_sum')
-summary(step_sum)
-hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Total Steps Per Day")
+hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Steps", ylab="Count")
 ```
 
 ```{r, echo=FALSE}
-hist(step_sum$date_sum, main="histogram of the total number of steps taken each day", xlab=" the total number of steps taken each day")
+hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Steps", ylab="Count")
+```
+
+```{r, echo=TRUE}
+#mean number of steps per day
+mean(step_sum$date_sum, na.rm=TRUE)
+```
+
+```{r, echo=TRUE}
+## [1] 9354
+```
+
+```{r, echo=TRUE}
+#median number of steps per day
+median(step_sum$date_sum, na.rm=TRUE)
+```
+
+```{r, echo=TRUE}
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
 
+```{r, echo=TRUE}
+#time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+avg_int<-active[,mean(steps,na.rm=TRUE),by=interval]
+setnames(avg_int, "V1", "interval_mean")
+plot(avg_int, type='l', main="Average Daily Activity Pattern", xlab="Interval", ylab="Steps")
+```
 
+```{r, echo=TRUE}
+#Which 5-min time interval contains the maximum number of steps?
+avg_int[which.max(avg_int$interval_mean)]
+```
+
+```{r, echo=TRUE}
+## [1] 835
+```
 
 ## Imputing missing values
 
+```{r, echo=TRUE}
+#total number of missing values in the dataset
+nrow(active[is.na(active$steps),])
+```
 
+```{r, echo=TRUE}
+## [1] 2304
+```
+
+```{r, echo=TRUE}
+dt<-subset(merge(na_step, interval_average, by="interval"), TRUE,select=c(interval_mean, date, interval))
+setnames(dt, "interval_mean", "steps")
+active_clean<-rbind(subset(active, !is.na(steps)), dt)
+summary(active_clean)
+```
+
+```{r, echo=TRUE}
+step_sum_clean<-active_clean[,sum(steps,na.rm=TRUE),by=date]
+setnames(step_sum_clean, "V1", "date_sum")
+
+hist(step_sum_clean$date_sum, main="Total Steps Per Day", xlab="Total Steps")
+```
+
+```{r, echo=TRUE}
+#mean number of steps per day
+mean(step_sum_clean$date_sum, na.rm=TRUE)
+```
+
+```{r, echo=TRUE}
+## [1] 10766
+```
+
+```{r, echo=TRUE}
+#median number of steps per day
+median(step_sum_clean$date_sum, na.rm=TRUE)
+```
+
+```{r, echo=TRUE}
+## [1] 10766
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo=TRUE}
+#Factor variable with two levels indicating a weekday or weekend
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+active_clean[,w:=factor(ifelse(weekdays(as.Date(date),abbreviate=TRUE) %in% c("Sat","Sun"), "weekend","weekday"))]
+```
+
+```{r, echo=TRUE}
+library(reshape2)
+stepsmelt<-melt(active_clean,id.vars=c("w","interval"), measure="steps")
+steps_mean<-dcast(stepsmelt, w+interval~variable, fun=mean)
+
+library(lattice)
+xyplot(steps ~ interval | w, data = steps_mean,type='l', layout = c(1, 2), ylab="Number of Steps")
+```

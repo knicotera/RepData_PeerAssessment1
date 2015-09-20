@@ -8,27 +8,27 @@ output:
 
 ## Loading and preprocessing the data
 
-'''{r}
+```{r}
 setwd('/Users/knicoter/RepData_PeerAssessment1')
 library(data.table)
 active<-data.table(read.csv("./activity.csv"))
 summary(active)
-'''
+```
 
 ## What is mean total number of steps taken per day?
 
-#Calculate the summary total number of steps every day
+### Calculate the summary total number of steps every day
 
-'''{r, echo=TRUE}
+```{r, echo=TRUE}
 step_sum<-active[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum, 'V1', 'date_sum')
 summary(step_sum)
 hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Total Steps Per Day")
-'''
+```
 
-'''{r, echo=FALSE}
+```{r, echo=FALSE}
 hist(step_sum$date_sum, main="histogram of the total number of steps taken each day", xlab=" the total number of steps taken each day")
-'''
+```
 
 ## What is the average daily activity pattern?
 

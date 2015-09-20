@@ -17,14 +17,10 @@ dt<-data.table(read.csv("./activity.csv"))
 ## What is mean total number of steps taken per day?
 
 ```{r, echo=TRUE}
-#histogram of the total number of steps taken each day
+#histogram of the total number of steps taken per day
 step_sum<-dt[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum, 'V1', 'date_sum')
-hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Steps", ylab="Count")
-```
-
-```{r, echo=FALSE}
-hist(step_sum$date_sum, main="Total Steps Per Day", xlab="Steps", ylab="Count")
+hist(step_sum$date_sum, main="Total Taken Steps Per Day", xlab="Steps", ylab="Count")
 ```
 
 ```{r, echo=TRUE}
@@ -48,7 +44,8 @@ median(step_sum$date_sum, na.rm=TRUE)
 ## What is the average daily activity pattern?
 
 ```{r, echo=TRUE}
-#time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+#time series plot of the 5-minute interval (x-axis) and the 
+#average number of steps taken, averaged across all days (y-axis)
 avg_int<-dt[,mean(steps,na.rm=TRUE),by=interval]
 setnames(avg_int, "V1", "interval_mean")
 plot(avg_int, type='l', main="Average Daily Activity Pattern", xlab="Interval", ylab="Steps")
@@ -75,6 +72,7 @@ nrow(dt[is.na(dt$steps),])
 ```
 
 ```{r, echo=TRUE}
+#fill in all of the missing values in the dataset
 dt<-subset(merge(na_step, interval_average, by="interval"), TRUE,select=c(interval_mean, date, interval))
 setnames(dt, "interval_mean", "steps")
 dt_clean<-rbind(subset(dt, !is.na(steps)), dt)
@@ -82,9 +80,14 @@ summary(dt_clean)
 ```
 
 ```{r, echo=TRUE}
+#create a new dataset that is equal to the original dataset 
+#but with the missing data filled in
 step_sum_clean<-dt_clean[,sum(steps,na.rm=TRUE),by=date]
 setnames(step_sum_clean, "V1", "date_sum")
+```
 
+```{r, echo=TRUE}
+#make a histogram of the total number of steps taken each day
 hist(step_sum_clean$date_sum, main="Total Steps Per Day", xlab="Total Steps")
 ```
 
@@ -106,10 +109,14 @@ median(step_sum_clean$date_sum, na.rm=TRUE)
 ## [1] 10766
 ```
 
+**Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?**
+
+Yes. A larger mean change is the result of imputing missing data on the estimates of the total number of steps per day.
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ```{r, echo=TRUE}
-#Factor variable with two levels indicating a weekday or weekend
+#factor variable with two levels indicating a weekday or weekend
 Sys.setlocale("LC_TIME", "en_US.UTF-8")
 dt_clean[,w:=factor(ifelse(weekdays(as.Date(date),abbreviate=TRUE) %in% c("Sat","Sun"), "weekend","weekday"))]
 ```
